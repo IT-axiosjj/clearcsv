@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="清格 ClearCSV：在浏览器本地清理、预览与导出 CSV。文件不上传，无需登录。">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>清格 ClearCSV · 本地数据整理台</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script src="core.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#workspace">跳到工作区</a>
+<header class="topbar">
+  <a class="brand" href="./" aria-label="清格 ClearCSV 首页"><span class="brand-icon" aria-hidden="true"><i></i><i></i><i></i><i></i></span><strong>清格 <span>ClearCSV</span></strong></a>
+  <div class="top-actions"><span class="local-pill"><span></span> 文件仅在本地处理</span><button class="text-btn" id="helpButton">使用说明 <span aria-hidden="true">↗</span></button></div>
+</header>
+<div class="app-shell">
+  <aside class="sidebar" aria-label="工作流程">
+    <div class="sidebar-caption">YOUR WORKSPACE</div>
+    <div class="nav-item active"><span class="nav-glyph" aria-hidden="true">▦</span> 数据整理台 <span class="tiny-badge">01</span></div>
+    <div class="steps">
+      <div><span class="step-number">1</span><p><strong>导入数据</strong><small>CSV、TSV 或粘贴文本</small></p></div>
+      <div><span class="step-number">2</span><p><strong>检查并清理</strong><small>规则随时调整，原始值保留</small></p></div>
+      <div><span class="step-number">3</span><p><strong>导出结果</strong><small>下载 CSV 与处理摘要</small></p></div>
+    </div>
+    <div class="sidebar-note"><span class="note-symbol" aria-hidden="true">⌁</span><strong>数据留在你手里</strong><p>无需账号、没有上传。关闭页面后，本次数据不会被保存。</p></div>
+    <div class="sidebar-foot">LOCAL FIRST <span>v1.0</span></div>
+  </aside>
+  <main id="workspace">
+    <div class="page-heading"><div><p class="eyebrow">DATA, WITH CLARITY</p><h1>让每一格，都清清楚楚<span>。</span></h1><p class="intro">导入、检查、清理。一张表格，就从这里整理好。</p></div><button class="secondary" id="sampleButton"><span aria-hidden="true">↻</span> 使用示例</button></div>
+    <section class="import-zone" id="dropZone" aria-labelledby="importHeading">
+      <div class="import-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 15h8m-4-4v8"/></svg></div>
+      <div class="import-copy"><h2 id="importHeading">把 CSV 文件拖到这里</h2><p>UTF-8 · 最大 5 MB · 50,000 行 · 100 列</p></div>
+      <div class="import-actions"><input id="fileInput" type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values" hidden><button id="chooseFile" class="primary">选择文件 <span aria-hidden="true">↑</span></button><button id="pasteButton" class="secondary">粘贴数据</button></div>
+    </section>
+    <div id="errorMessage" class="error-box" role="alert" hidden></div>
+    <div class="file-line"><div><span class="file-dot" aria-hidden="true"></span><strong id="fileName">示例数据.csv</strong><span id="sampleTag" class="tag">合成示例</span></div><div class="delimiter-field"><label for="delimiter">分隔符</label><select id="delimiter"><option value="auto">自动识别</option><option value=",">逗号 ,</option><option value="tab">制表符 Tab</option><option value=";">分号 ;</option><option value="|">竖线 |</option></select><span id="detectedDelimiter" class="muted"></span></div></div>
+    <section class="metrics" aria-label="处理统计">
+      <article><span class="metric-label">原始记录</span><div><strong id="originalCount">0</strong><span>行</span></div><p>不包含表头</p></article>
+      <article class="metric-featured"><span class="metric-label">清理后保留</span><div><strong id="outputCount">0</strong><span>行</span></div><p id="retainedNote">等待导入</p></article>
+      <article><span class="metric-label">移除重复</span><div><strong id="duplicatesCount">0</strong><span>行</span></div><p>按清理后的整行比较</p></article>
+      <article><span class="metric-label">修整首尾空白</span><div><strong id="trimmedCount">0</strong><span>格</span></div><p>不改变字段内容与类型</p></article>
+    </section>
+    <div class="workbench">
+      <aside class="rules-panel panel" aria-labelledby="rulesHeading">
+        <div class="panel-heading"><h2 id="rulesHeading">清理规则</h2><span class="subtle-badge">实时预览</span></div>
+        <p class="panel-intro">关闭规则，即可恢复对应原始内容。</p>
+        <label class="rule"><input id="trimRule" type="checkbox" checked><span><strong>去除首尾空白</strong><small>保留字段中间的空格和换行</small></span></label>
+        <label class="rule"><input id="blankRule" type="checkbox" checked><span><strong>移除全空记录</strong><small>所有字段都为空白时才移除</small></span></label>
+        <label class="rule"><input id="dedupeRule" type="checkbox" checked><span><strong>合并重复记录</strong><small>整行完全相同，保留首次出现</small></span></label>
+        <div class="rule-note"><span aria-hidden="true">i</span><p>编号 <code>0007</code>、长整数和日期始终保留为文本。这里不会猜测并改写你的数据类型。</p></div>
+        <div class="profile-section"><h3>列概览</h3><label class="sr-only" for="columnSelect">选择要分析的列</label><select id="columnSelect"></select><div id="columnProfile"></div></div>
+        <div class="export-settings"><h3>导出设置</h3><label class="rule compact"><input id="formulaRule" type="checkbox" checked><span><strong>公式前缀保护</strong><small>为可能被识别为公式的文本加单引号</small></span></label><p id="formulaCount" class="muted"></p></div>
+      </aside>
+      <section class="preview-panel panel" aria-labelledby="previewHeading">
+        <div class="preview-header"><div><h2 id="previewHeading">数据预览</h2><p id="previewSummary">等待数据</p></div><span class="status-pill" id="statusPill"><span></span> 已更新</span></div>
+        <div class="table-tools"><div class="tabs" role="tablist" aria-label="预览数据版本"><button role="tab" id="cleanTab" aria-selected="true" aria-controls="tablePanel" class="selected">清理结果 <span id="cleanTabCount">0</span></button><button role="tab" id="rawTab" aria-selected="false" aria-controls="tablePanel" tabindex="-1">原始数据 <span id="rawTabCount">0</span></button></div><label class="search"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><input id="searchInput" type="search" placeholder="搜索预览内容" aria-label="搜索预览内容"></label></div>
+        <div id="warnings" class="warnings" hidden></div>
+        <div id="tablePanel" role="tabpanel" aria-labelledby="cleanTab"><div class="table-scroll" tabindex="0" aria-label="数据表格，可横向滚动"><table><caption class="sr-only">CSV 数据预览，源记录号包含表头，跨行字段仍计为一条记录</caption><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table><div class="empty-state" id="emptyState" hidden><span aria-hidden="true">⌕</span><strong>这里暂时没有数据</strong><p>导入文件或使用示例开始整理。</p></div></div></div>
+        <div class="table-footer"><div><span class="change-mark" aria-hidden="true"></span><span id="previewNote">浅蓝色表示已修整的单元格</span></div><div class="pagination"><span id="pageInfo">0–0 / 0</span><button class="page-button" id="prevPage" aria-label="上一页">‹</button><button class="page-button" id="nextPage" aria-label="下一页">›</button></div></div>
+        <div class="export-bar"><div><strong id="exportHeading">准备好，带走干净的数据</strong><p>导出全部清理结果；搜索仅影响预览。</p></div><div><button class="secondary" id="reportButton">处理摘要</button><button class="primary" id="exportButton">导出 CSV <span aria-hidden="true">↓</span></button></div></div>
+      </section>
+    </div>
+    <footer class="workspace-footer"><span>清格 ClearCSV <span aria-hidden="true">·</span> 每次整理，都可以回看原始值。</span><button id="helpFooterButton" class="text-btn">使用说明</button><span>原创作品 · AI 辅助开发</span></footer>
+    <p class="sr-only" id="announcement" aria-live="polite"></p>
+  </main>
+</div>
+<dialog id="pasteDialog" aria-labelledby="pasteTitle"><div class="dialog-top"><h2 id="pasteTitle">粘贴 CSV 数据</h2><button class="close-button" id="closePaste" aria-label="关闭粘贴窗口">×</button></div><p>第一条记录作为表头。支持引号内的分隔符和换行。</p><label for="pasteText">数据文本</label><textarea id="pasteText" rows="11" placeholder="编号,姓名,备注&#10;0001,小林,&quot;你好，CSV&quot;"></textarea><p id="pasteError" class="form-error" role="alert" hidden></p><div class="dialog-bottom"><button class="secondary" id="cancelPaste">取消</button><button class="primary" id="applyPaste">载入并预览</button></div></dialog>
+<dialog id="helpDialog" aria-labelledby="helpTitle"><div class="dialog-top"><h2 id="helpTitle">一张表格，三步整理</h2><button class="close-button" id="closeHelp" aria-label="关闭使用说明">×</button></div><ol class="help-list"><li><strong>导入 UTF-8 文件</strong><p>支持 CSV、TSV、分号和竖线分隔文本，第一条记录是表头。旧版 GBK 文件请先另存为 UTF-8。</p></li><li><strong>核对清理结果</strong><p>依次去除字段首尾空白、移除全空记录、按整行去重。切换“原始数据”查看来源，源记录号从表头后的第 2 条开始。</p></li><li><strong>导出并核对</strong><p>导出为 UTF-8 BOM、逗号分隔的 CSV。公式前缀保护默认开启，可能改变以 =、+、-、@ 等字符开头的文本；普通负数保持原值。重要数据请保留原件。</p></li></ol><p class="help-privacy">没有云端上传，也不在本地存储中持久保存数据。清理后的 CSV 需要你主动下载保存。</p></dialog>
+<div class="toast" id="toast" role="status" hidden></div>
+</body>
+</html>
